@@ -1,0 +1,31 @@
+# ============ 密钥：绝对不能提交 ============
+.env
+.env.local
+.env.*.local
+
+# ============ 数据：你的全部文章和待办都在这里，绝对不能提交 ============
+backend/data/
+backend/uploads/
+
+# ============ Python ============
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# ============ Node ============
+node_modules/
+dist/
+.vite/
+
+# ============ 编辑器与系统 ============
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ============ 日志 ============
+*.log

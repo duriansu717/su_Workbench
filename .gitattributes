@@ -1,0 +1,28 @@
+# 统一使用 LF 行尾。
+# 不加这个文件时，Windows 上的 git 会在每次提交时刷一屏 "LF will be replaced by CRLF" 警告；
+# 更麻烦的是以后万一要上 Linux 服务器或加 CI，会因为行尾差异产生整文件的假改动。
+* text=auto eol=lf
+
+# Windows 批处理脚本必须是 CRLF，否则跑不起来
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制文件不做行尾转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
+# 生成的锁文件不参与 diff，避免污染代码审查
+package-lock.json -diff
+
+# 构建工具自动生成的类型声明，在 GitHub 上折叠显示
+auto-imports.d.ts linguist-generated=true
+components.d.ts linguist-generated=true
