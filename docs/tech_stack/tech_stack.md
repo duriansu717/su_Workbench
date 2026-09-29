@@ -188,6 +188,7 @@ type 和描述用中文，scope 用英文。**scope 统一用模块名**：`core
 | package.json | 前端依赖清单 | 是 |
 | package-lock.json | 前端依赖锁文件 | 是，不要删 |
 | .gitignore | 忽略规则 | 是 |
+| .gitattributes | 声明行尾统一为 LF，避免 Windows 下每次提交刷一屏警告，也避免以后上 Linux 时因行尾产生整文件的假改动 | 是 |
 | .env.example | 环境变量模板，只写字段名不写真实值 | 是 |
 | .env | 真实密钥（JWT SECRET_KEY、以后的 AI API Key） | 否，必须写进 .gitignore |
 | README.md | 启动与使用说明 | 是 |
