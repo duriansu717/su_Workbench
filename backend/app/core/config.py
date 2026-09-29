@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     secret_key: str = "dev-only-please-change-me"
     access_token_expire_minutes: int = 60 * 24 * 30  # 30 天
 
+    # 本地开发是 http，Cookie 不能带 secure 标记，否则浏览器不会回传。
+    # **部署到 HTTPS 之后必须改成 true**，否则登录凭证会在明文连接上传输。
+    cookie_secure: bool = False
+
     # ---- 数据（均为相对 backend/ 的路径）----
     database_file: str = "data/freedom_design.db"
     upload_dir: str = "uploads"

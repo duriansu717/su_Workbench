@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 
 import api from '../api'
 import { getModules } from '../registry'
+import { useAuthStore } from '../stores/auth'
 
 interface BackendModule {
   name: string
@@ -14,9 +15,9 @@ interface BackendModule {
  * 首页。模块卡片来自前端注册表，同时探一次后端 /api/health。
  *
  * 这个健康检查是骨架阶段的验收手段：它同时验证了「后端起来了」和
- * 「模块注册表在后端也生效了」两件事。功能都接上以后可以保留，
- * 也可以改成更有用的信息。
+ * 「模块注册表在后端也生效了」两件事。
  */
+const auth = useAuthStore()
 const modules = getModules()
 const backendModules = ref<BackendModule[] | null>(null)
 const backendError = ref('')
@@ -33,7 +34,7 @@ onMounted(async () => {
 
 <template>
   <div class="home">
-    <h1 class="title">工作台</h1>
+    <h1 class="title">你好，{{ auth.username }}</h1>
 
     <el-alert
       v-if="backendError"

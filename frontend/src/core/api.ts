@@ -17,8 +17,19 @@ export const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // TODO 登录页建好后，这里负责跳转到 /login
+    // 401 = 没登录或登录已过期，送回登录页。
+    //
+    // 这里用 window.location 而不是 router.push，是为了避开循环依赖：
+    // router → 守卫 → auth store → 本文件 → router，转一圈又回来了。
+    // 登录过期本来就是该重新加载应用的场景，整页跳转也不亏。
+    //
+    // 判断路径是为了不把「密码输错」也当成登录过期 ——
+    // 登录接口失败时也返回 401，那时人已经在 /login 上了。
+    if (
+      error.response?.status === 401 &&
+      !window.location.pathname.startsWith('/login')
+    ) {
+      window.location.href = '/login'
     }
     return Promise.reject(error)
   },

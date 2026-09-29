@@ -66,20 +66,40 @@ backend/
     ├── main.py                 # 入口：建 FastAPI → 挂载注册表 → 托管前端静态文件
     ├── core/                   # 骨架层，不含任何业务
     │   ├── config.py           # 读 .env，暴露配置对象
-    │   ├── database.py         # SQLAlchemy engine / Session / Base
+    │   ├── database.py         # SQLAlchemy engine / Session / Base / 时间戳基类
     │   ├── models.py           # 全局表（目前只有 user）
+    │   ├── schemas.py          # 骨架层共用的请求 / 响应模型
     │   ├── security.py         # 密码哈希、JWT 签发与校验
     │   ├── deps.py             # 通用依赖，如 get_current_user
-    │   ├── module.py           # 模块契约（ModuleInfo）★ 见下方说明
+    │   ├── router.py           # 骨架层接口：健康检查 + 登录认证 ★ 见下方说明
+    │   ├── module.py           # 模块契约（ModuleInfo）
     │   └── registry.py         # 模块注册表
     └── modules/                # 业务层
-        ├── auth/               # 登录 / 登出（无自己的表）
         ├── article/            # 文章、分类、标签
         ├── plan/               # 待办与计划
         └── ai/                 # 知识库与问答
 ```
 
-**user 表为什么在 core 而不是 auth 模块**：功能清单第四节把用户标为「全局，不归属任何模块」。更实际的原因是——每个模块的接口都要靠 `get_current_user` 鉴权，如果这个函数住在 auth 模块里，那所有模块都得依赖 auth。放进 core，依赖方向才干净。
+**认证为什么整体属于 core，而不是一个模块**（实现 F1 时定的，v1.0 原文把 auth 列在 modules 下，这点改了）：
+
+一开始确实建了 `modules/auth/`，写登录功能时发现它站不住，理由有三条：
+
+1. **依赖方向**。每个业务模块的接口都要靠 `get_current_user` 鉴权。如果它住在 auth 模块里，那 article、plan、ai 就全都得 import auth，多出一条本不该存在的依赖线——而 auth 自己不依赖任何人，这种单向依赖看着还行，但它让"模块之间互不依赖"这条规则出现了例外
+2. **前端更硬的原因**：路由守卫住在 `core/router.ts`，它必须能读到登录态。如果登录态属于某个模块，core 就要反向依赖模块，直接违反第五章的依赖方向铁律
+3. **它本来就不是业务**。core 的规则是「不许出现业务名词」，而认证不是业务名词——它和 `security.py`、`deps.py` 是同一类东西
+
+所以认证在两边的归属是：
+
+| | 放哪 | 内容 |
+|---|---|---|
+| 后端 | `core/router.py` | `/api/health`、`/api/auth/login`、`/logout`、`/me` |
+| 后端 | `core/security.py`、`core/deps.py` | 密码哈希、JWT 签发校验、`get_current_user` |
+| 前端 | `core/stores/auth.ts`、`core/views/LoginView.vue` | 登录态、登录页 |
+| 前端 | `core/router.ts` | 登录页路由 + 全局守卫 |
+
+这些接口由 `main.py` 直接挂载在 `/api` 下，**不经过模块注册表**——因为它们本来就不是模块。
+
+顺带一个判断标准：**登录页必须在 `AppLayout` 之外**（没登录的人不该看见侧边导航），这也从结构上说明它不是普通业务页面。
 
 **core/module.py 为什么单独一个文件**（搭建骨架时新增，原文档漏写了）：它定义 `ModuleInfo` 这个模块契约。如果把它写在 `registry.py` 里会形成循环导入——`registry.py` 要 import 各模块的 `module.py`，而各模块的 `module.py` 又要 import `ModuleInfo`。拆出来之后依赖是单向的：
 
@@ -103,18 +123,19 @@ frontend/
     ├── App.vue
     ├── core/                   # 骨架层
     │   ├── api.ts              # axios 实例 + 拦截器（自动带 token、401 跳登录）
-    │   ├── router.ts           # 路由：从注册表收集各模块的路由
+    │   ├── router.ts           # 路由：从注册表收集各模块的路由 + 登录守卫
     │   ├── module.ts           # 模块契约（ModuleDef 类型）
     │   ├── registry.ts         # 模块注册表
-    │   ├── stores/             # 全局 store（登录状态；接上登录功能后创建）
+    │   ├── stores/
+    │   │   └── auth.ts         # 登录状态 ★ 见下方说明
     │   ├── views/
     │   │   ├── HomeView.vue    # 首页：模块卡片 + 后端连通性检查
+    │   │   ├── LoginView.vue   # 登录页（故意在 AppLayout 之外）
     │   │   └── NotFoundView.vue
     │   └── layout/
     │       ├── AppLayout.vue   # 外壳：侧边栏 + 内容区
     │       └── SideNav.vue     # 导航，由注册表生成，不是写死的链接
     └── modules/
-        ├── auth/
         ├── article/
         ├── plan/
         └── ai/

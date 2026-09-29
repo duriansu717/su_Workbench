@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.registry import get_modules
+from app.core.router import router as core_router
 
 settings.ensure_directories()
 
@@ -30,21 +31,10 @@ app.add_middleware(
 )
 
 
-@app.get("/api/health", tags=["core"])
-def health() -> dict:
-    """健康检查。顺便返回当前加载了哪些模块，方便确认注册表生效。"""
-    return {
-        "status": "ok",
-        "app": settings.app_name,
-        "modules": [
-            {
-                "name": m.name,
-                "title": m.title,
-                "prefix": m.router_prefix,
-            }
-            for m in get_modules()
-        ],
-    }
+# ---- 骨架层自己的接口：健康检查 + 登录认证 ----
+# 它们不经过模块注册表，因为认证是基础设施不是业务模块。
+# 详见 core/router.py 顶部的说明。
+app.include_router(core_router, prefix="/api")
 
 
 # ---- 模块挂载：由注册表驱动，与具体模块无关 ----

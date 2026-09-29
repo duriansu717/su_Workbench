@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { HomeFilled } from '@element-plus/icons-vue'
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import { getModules } from '../registry'
+import { useAuthStore } from '../stores/auth'
 
 /**
  * 导航菜单。
@@ -13,17 +14,28 @@ import { getModules } from '../registry'
  */
 const modules = computed(() => getModules())
 const route = useRoute()
+const router = useRouter()
+const auth = useAuthStore()
 
-/** el-menu 需要一个「当前应该高亮哪一项」的值。 */
+/** el-menu 需要一个「当前该高亮哪一项」的值。 */
 const activeIndex = computed(() => {
   const match = modules.value.find((m) => route.path.startsWith(`/${m.name}`))
   return match ? `/${match.name}` : '/'
 })
+
+async function onLogout(): Promise<void> {
+  await auth.logout()
+  await router.replace({ name: 'login' })
+}
 </script>
 
 <template>
   <div class="side-nav">
-    <div class="brand">工作台</div>
+    <div class="brand">
+      <span class="brand-name">工作台</span>
+      <el-button link size="small" @click="onLogout">退出</el-button>
+    </div>
+
     <el-menu :default-active="activeIndex" router class="nav-menu">
       <el-menu-item index="/">
         <el-icon><HomeFilled /></el-icon>
@@ -40,7 +52,13 @@ const activeIndex = computed(() => {
 
 <style scoped>
 .brand {
-  padding: 18px 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 16px 10px 20px;
+}
+
+.brand-name {
   font-size: 16px;
   font-weight: 600;
   letter-spacing: 1px;
@@ -52,7 +70,10 @@ const activeIndex = computed(() => {
 
 @media (max-width: 768px) {
   .brand {
-    padding: 10px 16px 4px;
+    padding: 10px 12px 4px 16px;
+  }
+
+  .brand-name {
     font-size: 14px;
   }
 
