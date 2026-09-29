@@ -13,6 +13,7 @@
 | [功能清单](docs/feature_list/feature_list.md) | 要做哪些功能 |
 | [技术栈选型与版本控制](docs/tech_stack/tech_stack.md) | 用什么技术、什么版本、怎么管代码 |
 | [架构设计](docs/architecture/architecture.md) | 代码怎么组织 |
+| [数据库设计](docs/database/database.md) | 有哪些表、每个字段怎么定、为什么这么定 |
 
 ## 环境要求
 
@@ -34,7 +35,20 @@ python -m venv .venv                      # 首次
 source .venv/Scripts/activate             # Windows Git Bash（PowerShell 用 .venv\Scripts\Activate.ps1）
 pip install -r requirements.txt           # 首次
 cp .env.example .env                      # 首次，然后填入自己的 SECRET_KEY
+
+python -m alembic upgrade head            # 首次：建表
+python -m scripts.create_user             # 首次：创建登录账号（密码交互式输入）
+
 uvicorn app.main:app --reload             # 默认 http://localhost:8000
+```
+
+> 装依赖卡住的话是网络问题，加国内镜像：`pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple`
+
+**改过表结构之后**，重新生成并执行迁移：
+
+```bash
+python -m alembic revision --autogenerate -m "说明这次改了什么"
+python -m alembic upgrade head
 ```
 
 接口文档：<http://localhost:8000/docs>
