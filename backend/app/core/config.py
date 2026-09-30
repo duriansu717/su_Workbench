@@ -52,8 +52,9 @@ class Settings(BaseSettings):
     ai_chat_thinking: bool = False
 
     ai_retrieval_top_k: int = 5
-    # 初始猜测值，真实用几次后要回来调，理由见接口设计文档 4.2 节
-    ai_retrieval_min_score: float = 0.35
+    # ★ 2026-09-30 用 63 篇真实数据实测：正确答案 top-1 在 0.626~0.817，
+    #   无关分块最高 0.493，所以取 0.55。这个数字换 embedding 模型后要重测。
+    ai_retrieval_min_score: float = 0.55
 
     ai_chunk_size: int = 500
     ai_chunk_overlap: int = 100
