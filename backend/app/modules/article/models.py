@@ -52,6 +52,10 @@ class ArticleStatus:
     DELETED = "deleted"
 
 
+# 列表页摘要截取多少字
+EXCERPT_LENGTH = 120
+
+
 class Category(TimestampMixin, Base):
     """文章的一级分类。没有 parent_id —— N6 已明确不做多级分类。"""
 
@@ -118,3 +122,16 @@ class Article(TimestampMixin, Base):
     tags: Mapped[list["Tag"]] = relationship(
         secondary=article_tag, back_populates="articles"
     )
+
+    @property
+    def excerpt(self) -> str:
+        """列表页展示的摘要。
+
+        **故意不做成数据库字段**：摘要完全由 content_text 派生，存一份就多一处
+        和正文不同步的可能 —— 而"两个字段不同步"正是这个项目一直在避免的事
+        （content_html 和 content_text 必须在同一个函数里一起写，也是同一个原因）。
+        """
+        text = (self.content_text or "").strip()
+        if len(text) <= EXCERPT_LENGTH:
+            return text
+        return text[:EXCERPT_LENGTH] + "…"

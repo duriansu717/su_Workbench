@@ -46,6 +46,12 @@ for _module in get_modules():
     )
 
 
+# ---- 用户上传的文件 ----
+# 这个目录是全局的（各模块往里写自己的子目录，如 images/），不属于任何模块，
+# 所以在这里挂载而不是在模块里。文件内容本身在 .gitignore 里，不进版本库。
+app.mount("/uploads", StaticFiles(directory=settings.upload_path), name="uploads")
+
+
 # ---- 托管前端构建产物 ----
 # 日常使用时先执行 `npm run build`，FastAPI 直接把前端一起托管，只需要跑一个进程。
 # 开发时目录不存在，这一段会自动跳过，前端跑在 Vite 上。
