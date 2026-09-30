@@ -2,7 +2,6 @@
 import '@wangeditor/editor/dist/css/style.css'
 
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
-import { ElMessage } from 'element-plus'
 import { onBeforeUnmount, shallowRef } from 'vue'
 
 import articleApi from '../api'

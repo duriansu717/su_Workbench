@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ArrowLeft, Delete, Edit, RefreshLeft } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 

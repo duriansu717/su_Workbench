@@ -226,6 +226,8 @@ type 和描述用中文，scope 用英文。**scope 统一用模块名**：`core
 | 依赖风险 | 国内网络环境下 pip / npm 装包可能慢或失败 | 一次性配置国内镜像源（pip 用清华 TUNA，npm 用阿里云），配完就不用再管 |
 | **依赖风险** | **npm 的 `latest` 标签不一定是你要的版本**。本项目的 `@wangeditor/editor-for-vue` 就踩了：latest 指向 Vue 2 版本 | 装包前用 `npm view <包名> peerDependencies` 核对它要求的运行时版本；纯前端库还要看它 peer 的是 Vue 2 还是 Vue 3 |
 | 流程风险 | `npm install ... \| tail -8` 这类管道会让**退出码变成 tail 的**，安装失败也显示成功 | 检查安装结果要么看日志内容（有没有 `added N packages`），要么用 `${PIPESTATUS[0]}` 取真实退出码。本项目踩过一次，白排查了几分钟 |
+| **样式风险** | **显式 `import { ElMessage } from 'element-plus'` 会让它的样式丢失**。Element Plus 的样式是 unplugin 的解析器**按需注入**的，显式导入绕过了这一步 —— 结果是弹窗能弹出来，但完全没有样式，**而且构建不报任何错** | 组件函数（`ElMessage` / `ElMessageBox` / `ElLoading` 等）**不要自己写 import**，交给 `unplugin-auto-import` 注入。验收方法：构建后 `grep -l "el-message" dist/assets/*.css`，能搜到才算真的进来了。本项目踩过一次 |
+| 流程风险 | 改完代码**先跑类型检查再跑构建**，会报 `Cannot find name 'ElMessage'` 之类的错 | `auto-imports.d.ts` 是 `vite dev` / `vite build` 时生成的，类型检查依赖它。**先跑一次 dev 或 build，再跑 type-check** |
 | 学习成本 | TypeScript 对只学过一点编程的人有门槛 | 先用 Vue 官方脚手架默认配置，把 tsconfig 的 `strict` 关掉降低门槛，等写顺了再逐步打开 |
 | 学习成本 | FastAPI 的 async / await 需要理解异步概念 | 本项目几乎全是简单增删改查，第一阶段用同步写法（`def` 而不是 `async def`）完全能跑，不必一上来就啃异步 |
 | 学习成本 | Alembic 的迁移概念对新手不直观 | 第一阶段只用两条命令：`alembic revision --autogenerate -m "说明"` 和 `alembic upgrade head`，不深究原理 |
