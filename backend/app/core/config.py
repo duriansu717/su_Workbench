@@ -32,6 +32,32 @@ class Settings(BaseSettings):
     database_file: str = "data/freedom_design.db"
     upload_dir: str = "uploads"
 
+    # ---- AI 模块（第三期 F11~F13）----
+    #
+    # 这里全部给默认值，所以 .env 里不写这几项也能启动 ——
+    # 没配 key 时 AI 模块会明确报「未配置」，其余模块完全不受影响。
+    #
+    # ★ 模型名和 base_url 刻意做成配置而不是常量：「百炼会定期下线旧模型」
+    #   这件事是必然发生的，写死在代码里意味着每次都要改代码重新发版。
+    dashscope_api_key: str = ""
+    ai_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+
+    # ★ 这两个必须配套。换 embedding 模型却不换维度，旧向量和新向量就不在
+    #   同一个向量空间里 —— 检索会返回莫名其妙的内容，而且一路不报错。
+    ai_embedding_model: str = "text-embedding-v4"
+    ai_embedding_dim: int = 1024
+
+    ai_chat_model: str = "qwen3.7-flash"
+    # 思考模式。实测同一个 RAG 问题：开 = 9.6 秒 / 662 思考 token，关 = 2.4 秒 / 0。
+    ai_chat_thinking: bool = False
+
+    ai_retrieval_top_k: int = 5
+    # 初始猜测值，真实用几次后要回来调，理由见接口设计文档 4.2 节
+    ai_retrieval_min_score: float = 0.35
+
+    ai_chunk_size: int = 500
+    ai_chunk_overlap: int = 100
+
     @property
     def database_path(self) -> Path:
         return BASE_DIR / self.database_file

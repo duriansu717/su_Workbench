@@ -9,3 +9,10 @@ bcrypt==5.0.0
 python-multipart==0.0.32
 nh3==0.3.7
 beautifulsoup4==4.15.0
+
+# ---- AI 问答模块（第三期 F11~F13）----
+# 两个都是纯 Python 包，不拉服务、不常驻，符合「不装环境、省内存」的前提。
+# openai：调模型用，换供应商只改 .env 里的 AI_BASE_URL
+# numpy：余弦相似度。为什么不用向量数据库见技术栈文档 3.7 节
+openai==3.20.0
+numpy==2.5.3
