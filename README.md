@@ -16,6 +16,7 @@
 | [数据库设计](docs/database/database.md) | 有哪些表、每个字段怎么定、为什么这么定 |
 | [接口设计（文章模块）](docs/api_design/api_design.md) | 每个接口长什么样、字段有哪些、出错怎么返回 |
 | [接口设计（计划模块）](docs/api_design/api_design_plan.md) | 同上，计划模块 |
+| [接口设计（AI 问答模块）](docs/api_design/api_design_ai.md) | 同上，AI 模块；含模型选型的实测数据和流式协议 |
 
 ## 环境要求
 
@@ -43,6 +44,13 @@ python -m scripts.create_user             # 首次：创建登录账号（密码
 
 uvicorn app.main:app --reload             # 默认 http://localhost:8000
 ```
+
+> **AI 问答模块需要额外的 API Key。** 去 [阿里云百炼控制台](https://bailian.console.aliyun.com/)
+> 创建一个，填进 `.env` 的 `DASHSCOPE_API_KEY`（新用户有免费额度）。
+> 不填也能启动 —— 只有 AI 模块会提示「还没有配置模型 API Key」，文章和计划模块照常可用。
+>
+> 模型名也都在 `.env` 里，**代码里一个都没写死**。百炼会定期下线旧模型，
+> 遇到 `model not found` 就去 `.env` 换一个新名字，不用改代码。
 
 > 装依赖卡住的话是网络问题，加国内镜像：`pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple`
 
@@ -89,6 +97,17 @@ freedom_design/
 │       └── modules/           # 业务层
 └── docs/                      # 各阶段产出文档
 ```
+
+## 自测
+
+两处自测都**不需要 API Key、不联网、不碰数据库**，随时可以跑：
+
+```bash
+cd backend  && .venv/Scripts/python.exe -m scripts.selftest_ai   # 切块、假 provider、重建看门狗
+cd frontend && npm run selftest                                  # SSE 流式解析（含中文被切断的边界情况）
+```
+
+前端那份用 Node 24 原生的 TypeScript 支持直接跑 `.ts`，**没有引入任何测试框架**。
 
 ## 新增一个模块
 
