@@ -1,10 +1,10 @@
 # Freedom Design 个人工作台 技术栈选型与版本控制方案
 
-> 文档版本：v1.1
-> 生成日期：2026-09-29
+> 文档版本：v1.2
+> 生成日期：2026-09-30
 > 上游依赖：docs/feature_list/feature_list.md
 > 关联文档：docs/feature_list/feature_list.md
-> 本版变更：技术栈落地实施后回写实际情况。TypeScript 由 7.0.2 降为 5.9.3（第七章预判的工具链风险真实发生）；前端新增 @types/node 26.6.3；记录 pip 源问题及其解决方式
+> 本版变更：修正 wangEditor 的 Vue 绑定版本（v1.0/v1.1 写的 1.0.2 是 **Vue 2** 版本，装上去直接 peer 冲突；Vue 3 的正确版本是 5.1.12）。v1.1 变更：TypeScript 由 7.0.2 降为 5.9.3；前端新增 @types/node 26.6.3；记录 pip 源问题
 
 ## 一、技术需求分析
 
@@ -26,7 +26,7 @@
 | 前端路由 | Vue Router | 5.3.1 | 每个模块挂载自己的路由段，配合懒加载 |
 | UI 组件库 | Element Plus | 2.14.6 | 表单、表格、弹窗等基础组件，按需引入控制体积 |
 | 状态管理 | Pinia | 4.0.3 | 管理登录状态和各模块的共享数据 |
-| 富文本编辑器 | wangEditor | 5.1.23 | 文章正文的所见即所得编辑 |
+| 富文本编辑器 | wangEditor | editor 5.1.23 + editor-for-vue 5.1.12 | 文章正文的所见即所得编辑 |
 | 后端框架 | FastAPI | 0.141.1 | 提供 REST 接口；每个模块一个 APIRouter，天然对应模块化架构 |
 | 后端语言 | Python | 3.13.12 | 系统已安装，无需额外配置 |
 | ORM | SQLAlchemy | 2.1.1 | 用 Python 类定义表结构，不手写 SQL |
@@ -74,7 +74,15 @@
 
 ### 3.5 富文本编辑器
 
-- **选中方案**：wangEditor 5.1.23（配合 @wangeditor/editor-for-vue 1.0.2）
+- **选中方案**：wangEditor `@wangeditor/editor` 5.1.23 + `@wangeditor/editor-for-vue` **5.1.12**
+- **版本坑（务必记住）**：`@wangeditor/editor-for-vue` 有**两条平行的版本线**，而 npm 的 `latest` 标签指向的是 **Vue 2** 那条：
+
+  | 版本 | vue peer | 对应 |
+  |------|----------|------|
+  | `0.x` / `1.x`（`latest` 指向 1.0.2） | `^2.6.14` | Vue 2 |
+  | `5.1.x`（`next` 标签指向 5.1.12） | `^3.0.5` | **Vue 3** |
+
+  文档 v1.0/v1.1 里写的 `1.0.2` 是照着 `latest` 标签抄的，实际装的时候直接报 peer 冲突。**装这个包必须显式指定 5.1.x，不能用默认的 latest。**
 - **选型理由**：开箱即用——自带完整工具栏，装完就能写，不需要自己搭 UI。中文文档、中文社区，出问题好搜。对"生活小问题记录"这种场景，功能刚好够用。
 - **备选方案**：TipTap 3.31.3、Quill 2.0.3
 - **放弃原因**：TipTap 能力更强、社区更活跃，但它是 headless 的，工具栏和按钮要自己从头搭，对第一阶段是明显负担；Quill 2 的 Vue 3 集成需要自己包一层。**提醒**：编辑器存的 HTML 是可移植的，以后想换编辑器，已有文章的正文不用重新处理，所以这个选择不是不可逆的。
@@ -123,7 +131,7 @@
 | Node.js 24.16.0 | Vite 8.3.1 | 兼容 | Vite 对 Node 有最低版本要求，你的 24.16.0 远高于门槛 |
 | Vite 8.3.1 | Vue 3.5.43 | 兼容 | 需要 @vitejs/plugin-vue，其大版本要与 Vite 8 对应 |
 | Vue 3.5.43 | Element Plus 2.14.6 | 兼容 | Element Plus 2.x 面向 Vue 3 |
-| Vue 3.5.43 | wangEditor 5.1.23 | 需注意 | 必须搭配 @wangeditor/editor-for-vue 1.0.2（Vue 3 适配包），版本不匹配会报错 |
+| Vue 3.5.43 | @wangeditor/editor-for-vue 5.1.12 | 兼容 | **必须用 5.1.x**。该包 1.x 是 Vue 2 版（npm 的 latest 标签指向它），装了会 peer 冲突。已实测 5.1.12 通过类型检查与构建 |
 | TypeScript 5.9.3 | Vue 3.5.43 | 兼容 | 已实测通过 vue-tsc 3.3.11 类型检查。注意：TS 7.0.2 与 vue-tsc 3.3.11 冲突（见第七章） |
 | TypeScript 5.9.3 | Vite 8.3.1 | 兼容 | Vite 用 esbuild 剥离类型，不依赖 tsc，因此 TS 版本只影响类型检查，不影响构建 |
 | Pinia 4.0.3 | Vue 3.5.43 | 兼容 | Pinia 4 面向 Vue 3，需配合 Vue Router 5 使用 |
@@ -216,6 +224,8 @@ type 和描述用中文，scope 用英文。**scope 统一用模块名**：`core
 | 版本风险 | 各版本号是 2026-09-29 查询的，过一段时间就会过时 | 安装前到官方 release 页核对一次；本文档更新时版本号递增到 v1.1 |
 | 依赖风险 | 你机器上全局已装 pydantic 2.12.4、PyJWT 2.10.1，与本项目要用的版本不一致 | 项目一律使用 `.venv` 虚拟环境，**不要往全局 Python 里装任何东西**，否则以后别的项目会互相打架 |
 | 依赖风险 | 国内网络环境下 pip / npm 装包可能慢或失败 | 一次性配置国内镜像源（pip 用清华 TUNA，npm 用阿里云），配完就不用再管 |
+| **依赖风险** | **npm 的 `latest` 标签不一定是你要的版本**。本项目的 `@wangeditor/editor-for-vue` 就踩了：latest 指向 Vue 2 版本 | 装包前用 `npm view <包名> peerDependencies` 核对它要求的运行时版本；纯前端库还要看它 peer 的是 Vue 2 还是 Vue 3 |
+| 流程风险 | `npm install ... \| tail -8` 这类管道会让**退出码变成 tail 的**，安装失败也显示成功 | 检查安装结果要么看日志内容（有没有 `added N packages`），要么用 `${PIPESTATUS[0]}` 取真实退出码。本项目踩过一次，白排查了几分钟 |
 | 学习成本 | TypeScript 对只学过一点编程的人有门槛 | 先用 Vue 官方脚手架默认配置，把 tsconfig 的 `strict` 关掉降低门槛，等写顺了再逐步打开 |
 | 学习成本 | FastAPI 的 async / await 需要理解异步概念 | 本项目几乎全是简单增删改查，第一阶段用同步写法（`def` 而不是 `async def`）完全能跑，不必一上来就啃异步 |
 | 学习成本 | Alembic 的迁移概念对新手不直观 | 第一阶段只用两条命令：`alembic revision --autogenerate -m "说明"` 和 `alembic upgrade head`，不深究原理 |
