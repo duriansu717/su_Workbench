@@ -8,4 +8,10 @@ export const aiRoutes: RouteRecordRaw[] = [
     component: () => import('./views/AiHomeView.vue'),
     meta: { title: '问答' },
   },
+  {
+    path: 'ai/kb',
+    name: 'ai-kb',
+    component: () => import('./views/AiKbView.vue'),
+    meta: { title: '知识库' },
+  },
 ]
