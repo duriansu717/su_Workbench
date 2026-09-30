@@ -15,6 +15,7 @@
 | [架构设计](docs/architecture/architecture.md) | 代码怎么组织 |
 | [数据库设计](docs/database/database.md) | 有哪些表、每个字段怎么定、为什么这么定 |
 | [接口设计（文章模块）](docs/api_design/api_design.md) | 每个接口长什么样、字段有哪些、出错怎么返回 |
+| [接口设计（计划模块）](docs/api_design/api_design_plan.md) | 同上，计划模块 |
 
 ## 环境要求
 
